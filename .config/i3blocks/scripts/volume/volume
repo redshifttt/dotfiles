@@ -1,0 +1,11 @@
+#!/bin/sh
+
+human_volume=$(pamixer --get-volume-human)
+
+echo "$human_volume"
+
+case $BLOCK_BUTTON in
+    2) pamixer -m ;; # mute
+    4) pamixer -i ;; # vol up
+    5) pamixer -d ;; # vol down
+esac

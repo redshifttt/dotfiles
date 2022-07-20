@@ -1,0 +1,69 @@
+# sean's i3 config
+
+set $mod Mod4
+
+exec --no-startup-id nm-applet
+exec --no-startup-id dunst
+exec --no-startup-id picom
+
+# start a terminal
+bindsym $mod+Return exec alacritty
+
+# kill focused window
+bindsym $mod+w kill
+
+bindsym $mod+d exec --no-startup-id "rofi -show drun"
+bindsym $mod+s exec --no-startup-id "~/bin/scrot -s"
+bindsym $mod+Print exec --no-startup-id "~/bin/scrot -f"
+
+# change focus
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+# move focused window
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+l move right
+
+# enter fullscreen mode for the focused container
+bindsym $mod+f fullscreen toggle
+
+# Define names for default workspaces for which we configure key bindings later on.
+# We use variables to avoid repeating the names in multiple places.
+set $workspace1 "1: main"
+set $workspace2 "2: code"
+set $workspace3 "3: music"
+set $workspace4 "4: vidya"
+set $workspace5 "5: misc"
+
+# switch to workspace
+bindsym $mod+1 workspace $workspace1
+bindsym $mod+2 workspace $workspace2
+bindsym $mod+3 workspace $workspace3
+bindsym $mod+4 workspace $workspace4
+bindsym $mod+5 workspace $workspace5
+bindsym $mod+6 workspace back_and_forth
+
+# move focused container to workspace and move to that workspace as well
+bindsym $mod+Shift+1 move container to workspace number $workspace1; workspace $workspace1
+bindsym $mod+Shift+2 move container to workspace number $workspace2; workspace $workspace2
+bindsym $mod+Shift+3 move container to workspace number $workspace3; workspace $workspace3
+bindsym $mod+Shift+4 move container to workspace number $workspace4; workspace $workspace4
+bindsym $mod+Shift+5 move container to workspace number $workspace5; workspace $workspace5
+
+# restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
+bindsym $mod+r restart
+
+default_border none
+
+focus_follows_mouse no
+focus_on_window_activation focus
+
+bar {
+    status_command i3blocks
+    position top
+    font pango:DejaVu Sans Mono 10
+}

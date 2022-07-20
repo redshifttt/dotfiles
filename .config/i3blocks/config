@@ -1,0 +1,35 @@
+# i3blocks config file
+#
+# Please see man i3blocks for a complete reference!
+# The man page is also hosted at http://vivien.github.io/i3blocks
+#
+# List of valid properties:
+#
+# align
+# color
+# command
+# full_text
+# instance
+# interval
+# label
+# min_width
+# name
+# separator
+# separator_block_width
+# short_text
+# signal
+# urgent
+
+# Global properties
+
+SCRIPT_DIR=/home/sean/.config/i3blocks/scripts
+separator_block_width=25
+
+# [volume]
+# command=$SCRIPT_DIR/volume/volume
+# interval=once
+# label=VOL
+
+[time]
+command=date +'%a %e %b %Y %H:%M'
+interval=30

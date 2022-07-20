@@ -1,0 +1,8 @@
+super + r
+    rofi -show drun
+
+super + Return
+    alacritty
+
+super + s
+    scrot -s
