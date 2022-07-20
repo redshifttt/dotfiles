@@ -1,0 +1,41 @@
+#!/bin/sh
+# vim: ft=sh
+
+#
+# fetch: my system information script
+#
+
+blue=$(tput setaf 4)
+off=$(tput sgr0)
+
+# distro name
+os=$(grep "^NAME" /etc/os-release | sed "s|NAME=\"||;s|\"||")
+
+# kernel version
+kernel=$(uname -r | sed "s|-.*||")
+
+# package count with whatever package manager you use
+pkgs=$(yay -Qq | wc -l)
+
+# whatever shell you use
+shell=$(echo "${SHELL}" | xargs basename)
+
+# uptime but a bit fancy
+uptime=$(uptime -s | sed "s| |T|")
+upsince=$(datediff ${uptime} now -f "%Yy %mM %ww %dd %Hh %Mm ago" | sed -r "s/\b0\w+\s?//g")
+up=$(dateconv ${uptime} -f "%d %b %Y"); up="${up} (${upsince})"
+
+# DE stuff
+wm=$(grep "^exec" ~/.xinitrc | sed "s|exec ||")
+
+# hacky way to find out when you installed arch (arch specific of course)
+# install_date=$(head -n1 /var/log/pacman.log | sed "s/\[//;s/\+.*//")
+# install_date=$(dateconv ${install_date} -f "%d %b %Y" | sed "s|^0||g")
+
+printf "${blue}os${off},${os}
+${blue}kernel${off},${kernel}
+${blue}pkg${off},${pkgs}
+${blue}up${off},${up}
+${blue}env${off},${wm}
+${blue}sh${off},${shell}
+" | column -s "," -t -o " ~ " --table-right 1

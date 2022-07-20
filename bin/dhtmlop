@@ -1,0 +1,11 @@
+#!/usr/bin/bash
+
+dos2unix -f "$@"
+sed -ri "/^\r/d" "$@"
+sed -ri "s|^\s+||g" "$@"
+sed -i "/chatlog__author-avatar-container/,+2d" "$@"
+sed -i "s/chatlog__message\s/chatlog__message/g" "$@"
+sed -i "s|<video|<video preload=\"none\"|g" "$@"
+sed -i "s|<audio|<audio preload=\"none\"|g" "$@"
+sed -i "s|<iframe|<iframe loading=\"lazy\"|g" "$@"
+sed -ri "/^$/d" "$@"

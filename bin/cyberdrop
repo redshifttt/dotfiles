@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+link=$1
+
+page_links=$(curl -s $link | pup 'div a#file attr{href}')
+
+echo "${page_links}" | wget -i - -nc -q --show-progress

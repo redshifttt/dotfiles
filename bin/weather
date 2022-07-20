@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+api_key="7a5fbda2a30cbb5038a9dc2bb0586a20"
+api="https://api.openweathermap.org/data/2.5/weather?appid=$api_key&id=2648579&units=metric"
+
+current_weather=$(mktemp /tmp/weather-XXXXX.tmp)
+curl -s "$api" >> "$current_weather"
+
+# jq -cr '.main | [ .temp, .temp_max, .temp_min ] | @sh'
+
+current_temp=$(jq -cr '.main.temp | @sh' "$current_weather")
+weather_type=$(jq -cr '.weather[].main | @sh' "$current_weather" | sed "s|'||g")
+description=$(jq -cr '.weather[].description | @sh' "$current_weather" | sed "s|'||g")
+max_temp=$(jq -cr '.main.temp_max | @sh' "$current_weather")
+min_temp=$(jq -cr '.main.temp_min | @sh' "$current_weather")
+sunrise=$(jq -cr '.sys.sunrise | @sh ' "$current_weather" | dateconv -i "%s" -f "%H:%S")
+sunset=$(jq -cr '.sys.sunset | @sh ' "$current_weather" | dateconv -i "%s" -f "%H:%S")
+wind_dir=$(jq -cr '.wind.deg | @sh' "$current_weather")
+wind_gust=$(jq -cr '.wind.gust | @sh' "$current_weather")
+wind_speed=$(jq -cr '.wind.speed | @sh' "$current_weather")
+
+for i in {1..360}; do
+    [[ 0 -lt $i ]] && [[ 44 -gt $i ]] && wind_dir="\uf058 North"
+    [[ 45 -lt $i ]] && [[ 89 -gt $i ]] && wind_dir="\uf057 North East"
+    [[ 90 -lt $i ]] && [[ 134 -gt $i ]] && wind_dir="\uf04d East"
+    [[ 135 -lt $i ]] && [[ 179 -gt $i ]] && wind_dir="\uf088 South East"
+    [[ 180 -lt $i ]] && [[ 224 -gt $i ]] && wind_dir="\uf044 South"
+    [[ 225 -lt $i ]] && [[ 269 -gt $i ]] && wind_dir="\uf043 South West"
+    [[ 270 -lt $i ]] && [[ 314 -gt $i ]] && wind_dir="\uf048 West"
+    [[ 315 -lt $i ]] && [[ 359 -gt $i ]] && wind_dir="\uf087 North West"
+done
+
+printf "$weather_type ($description), $current_temp ($max_temp low high $min_temp) | $wind_dir $wind_speed ($wind_gust) | $sunrise → $sunset\n"

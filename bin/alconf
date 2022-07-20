@@ -1,0 +1,8 @@
+#!/bin/sh
+
+alacritty_config=/home/sean/.config/alacritty/alacritty.yml
+current_font=$(grep "family:" ${alacritty_config} | uniq | sed -r "s|^\s+family: ||")
+font_list=$(fc-list -b | grep "fullname:" | sort | uniq | sed "s|.*fullname: \"||;s|\".*||")
+selected_font=$(echo "$font_list" | fzf +m)
+
+sed -i "s|${current_font}|${selected_font}|g" ${alacritty_config}

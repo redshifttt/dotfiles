@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+#
+# 4scan: 4chan terminal viewer
+#
+
+# if no args then exit
+[[ $# == 0 ]] && exit
+
+# COLOURS
+red=$(tput bold; tput setaf 1)
+msg_col=$(tput bold; tput setaf 2)
+err_col=$(tput bold; tput setaf 1)
+bold=$(tput bold)
+off=$(tput sgr0)
+
+msg(){ printf "${msg_col}==>${off} ${bold}%s${off}\n" "$@"; }
+err(){ printf "${err_col}error:${off} ${bold}%s${off}\n" "$@"; }
+
+garbage_disposal(){
+    err "Aborted."
+    rm ${catalog_json}
+    exit
+}
+
+trap garbage_disposal INT
+
+board=$1
+page=$2
+
+thread_api_link="https://a.4cdn.org/${board}/catalog.json"
+
+[[ "${board}" == "f" ]] && msg "/f/ is not supported." && exit
+
+catalog_json=$(mktemp 4dl-XXXXXX.tmp)
+
+curl -s "${thread_api_link}" >> ${catalog_json}

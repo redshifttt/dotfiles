@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+query="$1"
+
+{ printf "${bold_underline}Repository|Name|Version|License|Download Size|Description${off}\n" && expac -Ss -H M "%r|%n|%v|%L|%k|%d" "${query}" ;} | column -s'|' -t

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+thing=$(fd -j10 -H "$1" / | fzf +m --prompt="matches for \"$1\"")
+xdg-open "$thing"

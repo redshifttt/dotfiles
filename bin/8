@@ -1,0 +1,34 @@
+#!/bin/bash
+#
+# 16 color script.
+
+if [[ "$1" ]]; then
+    test_word="$1"
+else
+    test_word="$(basename $0)"
+fi
+
+spacing="${#test_word}"; spacing=$(( spacing + 1 ))
+
+b="$(tput setaf 237)"
+off="$(tput sgr0)"
+
+# background
+for i in {0..8}; do printf "${b}$(tput setab $i)%-${spacing}s$(tput sgr0)${off}" "$test_word"; done
+printf "\n\n"
+
+# foreground
+for i in {0..8}; do printf "${b}$(tput setaf $i)%-${spacing}s$(tput sgr0)${off}" "$test_word"; done
+printf "\n\n"
+
+# # bold
+# for i in {0..8}; do printf "${b}$(tput setaf $1)$(tput bold $i)%-${spacing}s$(tput sgr0)${off}" "$test_word"; done
+# printf "\n\n"
+
+# # italics
+# for i in {0..8}; do printf "${b}$(tput setaf $1)$(tput sitm $i)%-${spacing}s$(tput sgr0)${off}" "$test_word"; done
+# printf "\n\n"
+
+# # underline
+# for i in {0..8}; do printf "${b}$(tput setaf $1)$(tput smul $i)%-${spacing}s$(tput sgr0)${off}" "$test_word"; done
+# printf "\n\n"

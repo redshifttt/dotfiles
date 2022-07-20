@@ -1,0 +1,20 @@
+#!/usr/bin/bash
+
+user="$1"
+
+curl -s https://api.2b2t.dev/stats?username=$user >> stats.json
+curl -s https://api.2b2t.dev/stats?lastdeath=$user >> lastdeath.json
+# curl -s https://api.2b2t.dev/stats?lastkill=$user >> lastkill.json
+curl -s https://api.2b2t.dev/seen?username=$user >> seen.json
+
+kills=$(jq '.[0].kills' stats.json)
+deaths=$(jq '.[0].deaths' stats.json)
+joins=$(jq '.[0].joins' stats.json)
+
+death_time=$(jq '.[0].time' lastdeath.json)
+death_date=$(jq '.[0].date' lastdeath.json)
+death_message=$(jq '.[0].message' lastdeath.json)
+
+printf "Kills: $kills\nDeaths: $deaths\nJoins: $joins\n"
+
+rm stats.json lastkill.json lastdeath.json seen.json

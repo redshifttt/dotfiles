@@ -1,0 +1,11 @@
+#!/bin/bash
+
+f="none"
+
+[[ $# -eq 1 ]] && f="$1"
+
+if tty -s; then
+    curl -# -w "\n" -T "$1" https://temp.sh
+else
+    curl -# -w "\n" -T "-" https://temp.sh/"$f"
+fi

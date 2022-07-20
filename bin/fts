@@ -1,0 +1,46 @@
+#!/usr/bin/python
+
+import os
+
+current_dir = os.getcwd()
+
+dirs = 0
+unknown_files = 0
+total = 0
+
+counted_filetypes = {}
+filetypes = []
+
+files_in_dir = os.listdir(current_dir)
+
+for file in files_in_dir:
+    if file.startswith("."):
+        continue # remove hidden files
+    if os.path.isdir(file):
+        dirs += 1 # count directories
+        total += 1
+    if not '.' in file: continue # remove files without extension
+
+    types = os.path.splitext(file)[1]
+    filetypes.append(types)
+
+for types in filetypes:
+    if types not in counted_filetypes:
+        counted_filetypes[types] = 0
+
+    counted_filetypes[types] += 1
+    total += 1
+
+counted_filetypes["DIR"] = dirs
+
+if not counted_filetypes["DIR"]:
+    counted_filetypes.pop("DIR")
+
+total_message = f"Total file system entries: {total}"
+separator = "-"
+message_length = len(total_message)
+print(total_message)
+print(separator * message_length)
+
+for key in counted_filetypes.keys():
+    print(f"{counted_filetypes[key]}\t{key}")

@@ -1,0 +1,17 @@
+#!/bin/sh
+
+list_packages(){
+    numbered_list=$(echo "$package_list" | sed "s|.*/||" | nl -s: | sed -r "s|^\s+||")
+    echo "$numbered_list" | column -s: -t -o " | "
+}
+
+no_of_packages(){
+    printf "%s\n" "$(echo "$package_list" | wc -l)"
+}
+
+package_list=$(yes n | yay -Syu 2>&1 | grep -E "^(core|extra|community|aur|chaotic-aur)" | awk '{print $1}')
+
+case "$1" in
+    list-packages) list_packages ;;
+    *) no_of_packages ;;
+esac

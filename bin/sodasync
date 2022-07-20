@@ -1,0 +1,160 @@
+#!/bin/bash
+
+# gen_stats(){
+#     base_dir="/home/num/files/projects/soda/"
+#     stats_file="${base_dir}/stats.html"
+#     date_format="$(date +'%a, %d %b %Y %H:%M:%S %Z%z')"
+#     rm "${stats_file}" 2>/dev/null
+#     printf ">> Generating file/directory counts..."
+#     dir_count="$(fd -t d . -d 1 "${base_dir}" | wc -l)"
+#     file_count="$(fd -t f . "${base_dir}" | wc -l)"
+#     last_mod_file="$(find "${base_dir}" -type f -printf '%T@ %p\n' | \
+#         sort -n | tail -1 | cut -f2- -d" " | sed "s|${base_dir}||g")"
+#     printf " done!\n"
+#     printf ">> Generating link list stats..."
+#     link_list_count="$(grep "<tr><th>" ${base_dir}/lists/web/index.html -c)"
+#     onion_list_count="$(grep "<tr><th>" ${base_dir}/lists/onion/index.html -c)"
+#     i2p_list_count="$(grep "<tr><th>" ${base_dir}/lists/i2p/index.html -c)"
+#     prot_link_list="$(grep -Eo "<tr><th><a href=\"https?" ${base_dir}/lists/web/index.html | \
+#         sed "s|<tr><th><a href=\"||g" | sort | uniq -c | sort -nr | sed -r "s/^ +//g;s/ /,/g" | \
+#         awk -F',' '{print "<tr><td>" $2 "</td> " "<td>" $1 "</td></tr>"}')"
+#     prot_onion_list="$(grep -Eo "<tr><th><a href=\"https?" ${base_dir}/lists/onion/index.html | \
+#         sed "s|<tr><th><a href=\"||g" | sort | uniq -c | sort -nr | sed -r "s/^ +//g;s/ /,/g" | \
+#         awk -F',' '{print "<tr><td>" $2 "</td> " "<td>" $1 "</td></tr>"}')"
+#     onion_version="$(grep -o "\[v[2-3]\]" ${base_dir}/lists/onion/index.html | \
+#         sort | uniq -c | sed -r "s/^ +//g;s/ /,/g" | \
+#         awk -F',' '{print "<tr><td>" $2 "</td> " "<td>" $1 "</td></tr>"}')"
+#     prot_i2p_list="$(grep -Eo "<tr><th><a href=\"https?" ${base_dir}/lists/i2p/index.html | \
+#         sed "s|<tr><th><a href=\"||g" | sort | uniq -c | sort -nr | sed -r "s/^ +//g;s/ /,/g" | \
+#         awk -F',' '{print "<tr><td>" $2 "</td> " "<td>" $1 "</td></tr>"}')"
+#     printf " done!\n"
+#     printf ">> Generating blog counts..."
+#     blog_post_counts="$(grep "<li>[0-9]" ${base_dir}/blog/index.html -c)"
+#     printf " done!\n"
+#     printf ">> Generating blog categories..."
+#     blog_post_cats="$(grep -o "category: <span class=\"blog_cats_.*\">\[.*\]<\/span>" ${base_dir}/blog/index.html | \
+#         sed "s|category: <span class=\"blog_cats_.*\">||g;s|<\/span>||g" | \
+#         sort | uniq -c | sort -nr | sed -r "s/^ +//g;s/ /,/g" | \
+#         awk -F',' '{print "<tr><td>" $2 "</td> " "<td>" $1 "</td></tr>"}')"
+#     printf " done!\n"
+#     printf ">> Generating stats.html..."
+# cat > "${stats_file}" <<EOL
+# <html>
+# <head>
+# <title>stats | num @ soda</title>
+# <style>
+# body {font-family: monospace; text-align: center; background: #1d1f21; color: #c5c8c6; }
+# a { color: #c5c8c6; }
+# table { border-collapse: collapse; margin: auto; font-size: 13px; }
+# th { background: #333; color: #c5c8c6; }
+# th, td { border: 1px solid #444; padding: 5px; }
+# td { text-align: right; }
+# td:nth-child(odd) { text-align: left; }
+# h3 { text-decoration: underline; }
+# </style>
+# </head>
+# <body>
+# <a href="../num">home</a>
+# <h3>General Site Stats</h3>
+# <p>Site and stats last updated on ${date_format}</p>
+# <p>Last modified file was ${last_mod_file}</p>
+# <table>
+# <thead>
+# <tr>
+# <th>name</th>
+# <th>amount</th>
+# </tr>
+# </thead>
+# <tbody>
+# <tr><td>Top-level Directories</td> <td>${dir_count}</td></tr>
+# <tr><td>Files</td> <td>${file_count}</td></tr>
+# </tbody>
+# </table>
+# <ul>
+# </ul>
+# <h3>Link Lists</h3>
+# <table>
+# <thead>
+# <tr>
+# <th>list</th>
+# <th>amount of links</th>
+# </tr>
+# </thead>
+# <tbody>
+# <tr><td>links/</td> <td>${link_list_count}</td> </tr>
+# <tr><td>onion/</td> <td>${onion_list_count}</td> </tr>
+# <tr><td>i2p/</td> <td>${i2p_list_count}</td> </tr>
+# </tbody>
+# </table>
+# <p>--- links/ protocol count ---</p>
+# <table>
+# <thead>
+# <tr>
+# <th>protocol</th>
+# <th>amount of links</th>
+# </tr>
+# </thead>
+# <tbody>
+# ${prot_link_list}
+# </tbody>
+# </table>
+# <p>--- onion/ protocol count ---</p>
+# <table>
+# <thead>
+# <tr>
+# <th>protocol</th>
+# <th>amount of links</th>
+# </tr>
+# </thead>
+# <tbody>
+# ${prot_onion_list}
+# </tbody>
+# </table>
+# <p>--- onion/ version count ---</p>
+# <table>
+# <thead>
+# <tr>
+# <th>version</th>
+# <th>amount of links</th>
+# </tr>
+# </thead>
+# <tbody>
+# ${onion_version}
+# </tbody>
+# </table>
+# <p>--- i2p/ protocol count ---</p>
+# <table>
+# <thead>
+# <tr>
+# <th>protocol</th>
+# <th>amount of links</th>
+# </tr>
+# </thead>
+# <tbody>
+# ${prot_i2p_list}
+# </tbody>
+# </table>
+# <h3>Blog Posts</h3>
+# <table>
+# <thead>
+# <tr>
+# <th>category</th>
+# <th>posts</th>
+# </tr>
+# </thead>
+# <tbody>
+# ${blog_post_cats}
+# <tr><td><b>total</b></td> <td>${blog_post_counts}</td></tr>
+# </tbody>
+# </table>
+# <p>Inspired by <a href="https://www.w3i.org/tree.html">w3i</a></p>
+# </body>
+# </html>
+# EOL
+#     printf " done!\n"
+# }
+# gen_stats
+
+base_dir=/home/sean/files/docs/projects/soda/
+
+rsync -Prhu --delete-after "${base_dir}" num@soda.privatevoid.net:/soda/num -e "ssh -p 52222" --exclude ".git*"

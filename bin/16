@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# 16 color script.
+
+b="$(tput setaf 237)"
+off="$(tput sgr0)"
+
+for i in {1..16}; do
+    [[ $i -gt 231 ]] && b="$(tput setaf 15)"
+    printf "${b}$(tput setab $i)%-6s$(tput sgr0)${off}" "$i"
+    [[ $(( i % 8 )) -eq "0" ]] && echo
+done

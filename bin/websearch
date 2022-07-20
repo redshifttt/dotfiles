@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+#
+# websearch: searching the web from the command line
+#
+
+declare -A options
+options[archwiki]="https://wiki.archlinux.org/index.php?search="
+options[arch_packages]="https://archlinux.org/packages/?q="
+options[reddit]="https://old.reddit.com/search?q="
+options[subreddit]="https://old.reddit.com/r/"
+options[youtube]="https://www.youtube.com/results?search_query="
+
+# select engine
+engine=$(printf '%s\n' "${!options[@]}" | fzf +m --prompt="choose search engine> ") "$@"
+url="${options["${engine}"]}"
+
+read -p "Search ${engine}: " query
+query="${query/ /%20}"
+
+xdg-open "${url}${query}" >/dev/null

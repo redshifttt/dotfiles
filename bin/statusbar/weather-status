@@ -1,0 +1,113 @@
+#!/bin/bash
+# Gets the weather
+
+get_value(){
+    jq -r ".$1" "${cached_json}"
+}
+
+gather_weather(){
+    curl -s https://wttr.in/${location}?format=j1 | jq '.current_condition[]' >> ${cached_json}
+}
+
+cache_weather(){
+    FeelsLikeC=$(get_value FeelsLikeC)
+    temp_C=$(get_value temp_C)
+    cloudcover=$(get_value cloudcover)
+    humidity=$(get_value humidity)
+    precipMM=$(get_value precipMM)
+    pressure=$(get_value pressure)
+    uvIndex=$(get_value uvIndex)
+    visibilityMiles=$(get_value visibilityMiles)
+    winddir16Point=$(get_value winddir16Point)
+    localObsDateTime=$(get_value localObsDateTime)
+
+cat > /tmp/weather << EOF
+FEELS_LIKE=\"$(get_value FeelsLikeC)\"
+TEMP=\"$(get_value temp_C)\"
+CLOUDCOVER=\"$(get_value cloudcover)\"
+HUMIDITY=\"$(get_value humidity)\"
+PRECIP=\"$(get_value precipMM)\"
+PRESSURE=\"$(get_value pressure)\"
+UV=\"$(get_value uvIndex)\"
+VISIBILITY=\"$(get_value visibilityMiles)\"
+WINDDIR=\"$(get_value winddir16Point)\"
+LOCALTIME=\"$(get_value localObsDateTime)\"
+EOF
+}
+
+# Statusbar output
+display_weather(){
+    printf "%s and %s\n" "$overview" "$temp"
+}
+
+# Notification
+display_rest(){
+    localtime_converted=$(get_value localObsDateTime | dateconv -i "%F %H:%M %P" -f "%H:%M")
+    unix_time=$(echo $localObsDateTime | dateconv -i "%F %H:%M %P" -f "%s")
+    formatted_time=$(datediff ${unix_time} -i "%s" now -f "(%d days, %H hours, %M mins ago)" | sed -r "s/\b0\s\w+,\s//g;s/,.*/ ago\)/")
+
+formatted_output=$(printf "<b>Feels Like</b>:${FeelsLikeC}°C
+<b>Temp</b>:${temp_C}°C
+<b>Cloud Cover</b>:${cloudcover}%%
+<b>Humidity</b>:${humidity}%%
+<b>Precipitation</b>:${precipMM}mm
+<b>Pressure</b>:${pressure}hPa
+<b>UV Index</b>:${uvIndex}
+<b>Visibility</b>:${visibilityMiles}mi
+<b>Wind</b>:${winddir16Point} ${wind}\n" | column -s: -t -o " | ")
+
+    notify-send "Weather Report" "$formatted_output\n\n<b>Last updated:</b> $localtime_converted $formatted_time"
+}
+
+collect_garbage(){
+    rm ${cached_json} # Remove the old file
+    cached_json=$(date +'/tmp/weather-%s.json') # we need to declare this again or it will use the original file again thus messing up the output
+    touch ${cached_json} # Create a new file with the new date
+}
+
+location="Blantyre+Scotland"
+# Create the file with the unix timestamp in it
+cached_json=$(date +'/tmp/weather-%s.json')
+# Don't create the file again, instead find the last created file which is this ^^
+cached_json=$(ls /tmp/weather-* | sort | tail -n1)
+
+feels_like=$(get_value FeelsLikeC)
+precip=$(get_value precipMM)
+wind_speed=$(get_value windspeedMiles)
+wind_direction=$(get_value winddir16Point)
+weather_desc=$(jq -r '.weatherDesc[0].value' ${cached_json})
+
+overview="$weather_desc"
+temp="$feels_like°C out"
+precip="${precip}mm"
+
+script_name=$(basename $0)
+
+# God I love trying to round directions up
+case "$wind_direction" in
+    N)   wind_direction="↑" ;;
+    NNE) wind_direction="↗" ;;
+    NE)  wind_direction="↗" ;;
+    ENE) wind_direction="→" ;;
+    E)   wind_direction="→" ;;
+    ESE) wind_direction="↘" ;;
+    SE)  wind_direction="↘" ;;
+    SSE) wind_direction="↓" ;;
+    S)   wind_direction="↓" ;;
+    SSW) wind_direction="↙" ;;
+    SW)  wind_direction="↙" ;;
+    WSW) wind_direction="↙" ;;
+    W)   wind_direction="←" ;;
+    WNW) wind_direction="←" ;;
+    NW)  wind_direction="↖" ;;
+    NNW) wind_direction="↑" ;;
+esac
+
+wind="$wind_direction ${wind_speed}mph"
+
+case "$1" in
+    # Gotta display weather the first time because it comes up blank if you don't
+    reset) display_weather; collect_garbage; gather_weather; cache_weather; display_weather ;;
+    noti) display_rest ;;
+    *) printf "Usage\n-----\n$script_name reset\tresets the weather\n$script_name noti\tdisplays a weather report notification\n" ;;
+esac

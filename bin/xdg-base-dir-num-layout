@@ -1,0 +1,79 @@
+#!/bin/sh
+
+CBLUE="\x1b[0;34m"
+CRED="\x1b[1;31m"
+CBOLD="\x1b[1m"
+CBOLD_UNDERLINE="\x1b[4;1m"
+COFF="\x1b[0m"
+
+prompt(){
+    while true; do
+        read -p "$1 [Y/n] " yn
+        case "$yn" in
+            [Yy]*) return 0 ;;
+            [Nn]*) exit ;;
+            *) return 0 ;;
+        esac
+    done
+}
+
+# Config -----------------------------------------------------------------
+
+BASE_DIR_NAME="${HOME}/files" # change this to whatever you want
+
+MISC_DIR="${BASE_DIR_NAME}/misc"
+DESKTOP_DIR="${MISC_DIR}"
+PUBLICSHARE_DIR="${MISC_DIR}"
+TEMPLATES_DIR="${MISC_DIR}"
+
+DOCUMENTS_DIR="${BASE_DIR_NAME}/docs"
+DOWNLOAD_DIR="${BASE_DIR_NAME}/download"
+MUSIC_DIR="${BASE_DIR_NAME}/music"
+PICTURES_DIR="${BASE_DIR_NAME}/images"
+VIDEOS_DIR="${BASE_DIR_NAME}/vids"
+
+# ------------------------------------------------------------------------
+
+printf "${CBOLD_UNDERLINE}The following directories will be setup, or created if they do not exist${COFF}:
+
+${CBLUE}BASE DIRECTORY${COFF} => ${CBOLD}${BASE_DIR_NAME}${COFF}
+
+${CBLUE}MISC${COFF} => ${CBOLD}${MISC_DIR}${COFF}
+${CBLUE}DESKTOP${COFF} => ${CBOLD}${DESKTOP_DIR}${COFF}
+${CBLUE}PUBLIC SHARE${COFF} => ${CBOLD}${PUBLICSHARE_DIR}${COFF}
+${CBLUE}TEMPLATES${COFF} => ${CBOLD}${TEMPLATES_DIR}${COFF}
+
+${CBLUE}DOCUMENTS${COFF} => ${CBOLD}${DOCUMENTS_DIR}${COFF}
+${CBLUE}DOWNLOAD${COFF} => ${CBOLD}${DOWNLOAD_DIR}${COFF}
+${CBLUE}MUSIC${COFF} => ${CBOLD}${MUSIC_DIR}${COFF}
+${CBLUE}PICTURES${COFF} => ${CBOLD}${PICTURES_DIR}${COFF}
+${CBLUE}VIDEOS${COFF} => ${CBOLD}${VIDEOS_DIR}${COFF}
+
+${CRED}WARNING${COFF}: MAKE SURE THE INFORMATION HERE MATCHES WHAT YOU WANT OR ELSE YOU WILL HAVE TO MANUALLY INTERVENE.
+"
+
+prompt "Is this good?"
+
+DIRS_TO_CREATE=( ${BASE_DIR_NAME} ${MISC_DIR} ${DESKTOP_DIR} ${PUBLICSHARE_DIR} \
+    ${TEMPLATES_DIR} ${DOCUMENTS_DIR} ${DOWNLOAD_DIR} ${MUSIC_DIR} \
+    ${PICTURES_DIR} ${VIDEOS_DIR} )
+
+# Create directories
+printf "${CBLUE}>>>${COFF} Creating directories...\n"
+dir_count=0
+for dir in "${DIRS_TO_CREATE[@]}"; do
+    [[ ! -d "${dir}" ]] && mkdir -p ${dir} && dir_count=$(( dir_count + 1 ))
+done
+[[ $dir_count -eq 0 ]] && printf "${CBLUE}>>>${COFF} Didn't need to create any directories as they already exist!\n" \
+                        || printf "${CBLUE}>>>${COFF} Created ${CBOLD}$dir_count${COFF}/${#DIRS_TO_CREATE[@]} directories\n"
+
+# Set directories up with XDG
+printf "${CBLUE}>>>${COFF} Configuring directories with XDG...\n"
+xdg-user-dirs-update --set DESKTOP ${DESKTOP_DIR}
+xdg-user-dirs-update --set DOCUMENTS ${DOCUMENTS_DIR}
+xdg-user-dirs-update --set DOWNLOAD ${DOWNLOAD_DIR}
+xdg-user-dirs-update --set MUSIC ${MUSIC_DIR}
+xdg-user-dirs-update --set PICTURES ${PICTURES_DIR}
+xdg-user-dirs-update --set PUBLICSHARE ${PUBLICSHARE_DIR}
+xdg-user-dirs-update --set TEMPLATES ${TEMPLATES_DIR}
+xdg-user-dirs-update --set VIDEOS ${VIDEOS_DIR}

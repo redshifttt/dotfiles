@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+thread="$1"
+board=$(awk -F'/' '{print $4}' <<< "${thread}")
+thread_no=$(awk -F'/' '{print $6}' <<< "${thread}")
+thread_api_link="https://a.4cdn.org/${board}/thread/${thread_no}.json"
+cache_file=$(mktemp /tmp/threadrep-XXXX.tmp)
+
+# This is for fixing the dates.
+final_date_format="%a %d %b %Y %H:00"
+missing_dates_file=$(mktemp /tmp/missing-dates-XXXXX.csv)
+correct_dates_file=$(mktemp /tmp/correct-dates-XXXXX.txt)
+patch_file=$(mktemp /tmp/fixed-XXXXX.patch)
+
+curl -s "${thread_api_link}" >> $cache_file
+
+jq '.posts[].time' $cache_file \
+    | dateconv -i "%s" -f "$final_date_format" \
+    | datesort -i "$final_date_format" \
+    | uniq -c \
+    | sed -r "s|^\s+||g;s| |,|" \
+    | awk -F',' '{print $2 "," $1}' >> "$missing_dates_file"
+
+isolated_missing_dates_file=$(mktemp /tmp/isolated-missing-dates-XXXXX.txt)
+awk -F',' '{print $1}' < "$missing_dates_file" >> $isolated_missing_dates_file
+first_missing_date=$(cat "$isolated_missing_dates_file" | head -n1 )
+last_missing_date=$(cat "$isolated_missing_dates_file" | tail -n1)
+first_date=$(echo "$first_missing_date" | dateconv -i "$final_date_format" -f "%F %T")
+last_date=$(echo "$last_missing_date" | dateconv -i "$final_date_format" -f "%F %T")
+
+dateseq -i "%F %T" "$first_date" "$last_date" -f "$final_date_format" >> "$correct_dates_file"
+diff $isolated_missing_dates_file $correct_dates_file >> $patch_file
+sed -ri "s|(^>.*)|\1,0|g" $patch_file
+patch $missing_dates_file $patch_file
+cat $missing_dates_file
+
+rm $missing_dates_file $correct_dates_file $isolated_missing_dates_file $patch_file 2>/dev/null

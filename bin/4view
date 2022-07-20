@@ -1,0 +1,103 @@
+#!/usr/bin/bash
+
+#
+# the 4chan thread viewer
+#
+
+# if no args then exit
+[ $# == 0 ] && exit
+
+# COLOURS
+subject_colour=$(tput bold; tput setaf 5)
+header_colour=$(tput bold; tput setaf 4)
+red=$(tput bold; tput setaf 1)
+msg_col=$(tput bold; tput setaf 2)
+err_col=$(tput bold; tput setaf 1)
+bold=$(tput bold)
+off=$(tput sgr0)
+
+msg(){ printf "${msg_col}==>${off} ${bold}%s${off}\n" "$@"; }
+err(){ printf "${err_col}error:${off} ${bold}%s${off}\n" "$@"; }
+
+garbage_disposal(){
+    err "Aborted."
+    rm ${thread_info}
+    exit
+}
+
+trap garbage_disposal INT
+
+thread=$1
+
+board=$(echo "${thread}" | awk -F'/' '{print $4}')
+thread_no=$(echo "${thread}" | awk -F'/' '{print $6}')
+thread_api_link="https://a.4cdn.org/${board}/thread/${thread_no}.json"
+
+[ "${board}" == "f" ] && msg "/f/ is not supported." && exit
+
+thread_info=$(mktemp 4view-XXXXXX.tmp)
+
+curl -s "${thread_api_link}" >> ${thread_info}
+
+last_index=$(gron "${thread_info}" | tail -n1 | sed "s/.*\[//;s/\].*//")
+
+curr_index=1
+
+op_name=$(jq -r '.posts[0].name' "${thread_info}" | sed "s/,//g")
+op_sub=$(jq -r '.posts[0].sub' "${thread_info}" | sed "s/,//g;s/\&amp\;/\&/g")
+op_com=$(jq -r '.posts[0].com' "${thread_info}" | sed -r "s|<br>| |g;s/<[^>]*>//g;s/\s+/ /g;s/\+//g" | recode html)
+op_unix=$(jq -r '.posts[0].time' "${thread_info}")
+op_time=$(date -d @${op_unix} +'%a %d %b %Y %R')
+op_replies=$(jq -r '.posts[0].replies' ${thread_info}); op_replies=$(( op_replies + 1 ))
+op_images=$(jq -r '.posts[0].images' ${thread_info}); op_images=$(( op_images + 1 ))
+op_ips=$(jq -r '.posts[0].unique_ips' ${thread_info})
+op_bump_limit=$(jq -r '.posts[0].bumplimit' ${thread_info})
+op_image_limit=$(jq -r '.posts[0].imagelimit' ${thread_info})
+op_archived=$(jq -r '.posts[0].archived' ${thread_info})
+
+[[ "${op_bump_limit}" == 1 ]] && op_replies="${status_colour}${op_replies}${off}" && op_limit_msg="${status_colour}(Bump Limit Reached)${off}" # Bump Limit
+[[ "${op_image_limit}" == 1 ]] && op_images="${status_colour}${op_images}${off}" && op_limit_msg="${status_colour}(Image Limit Reached)${off}" # Image Limit
+[[ "${op_bump_limit}" == 1 && "${op_image_limit}" == 1 ]] && op_limit_msg="${status_colour}(Bump & Image Limit Reached)${off}"                 # Bump and Image Limit
+[[ "${op_archived}" == 1 ]] && op_limit_msg="${status_colour}(Archived)${off}"                                                                 # Archived
+[[ "${op_ips}" == "null" ]] && op_ips="?"                                                                                                      # When a thread is archived, the Unique IP's don't show up so here we set it to "?"
+
+{
+echo "-----------------------------------------------------------------------------------------------------------------------------------------------
+$op_sub
+
+$op_name
+$op_com
+
+${op_replies}R / ${op_images}I / ${op_ips}IP $op_limit_msg
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+" | sed "/^null$/d"
+
+while [ $curr_index -lt $(( last_index + 1 )) ]; do
+    name=$(echo "${thread_info}" | xargs jq -r ".posts[${curr_index}].name" | sed "s/,//g")
+    post_no=$(echo "${thread_info}" | xargs jq -r ".posts[${curr_index}].no")
+    com=$(echo "${thread_info}" | xargs jq -r ".posts[${curr_index}].com" | \
+            sed -r "s|<br>|\n|g;
+                    s|^null$|\?|g;
+                    s|>>${thread_no}|>>${thread_no} \(OP\)|g;
+                    s|<span class=\"quote\">|\x1b[2;32m|g;
+                    s|</[a-z]+>|\x1b[0m|g;
+                    s|#p[0-9]+|0|g;
+                    s|<a href=\"0\" class=\"quotelink\">|\x1b[2;34;4m|g;
+                    s|<span class=\"deadlink\">|\x1b[1;31;4m|g;
+                    s|&gt;|>|g;
+                    s|&#039;|'|g;
+                    s|<wbr>||g")
+    unix=$(echo "${thread_info}" | xargs jq -r ".posts[${curr_index}].time")
+    time=$(date -d @${unix} +'%a %d %b %Y %R')
+    rel_time=$(dateconv ${unix} -i "%s"); rel_time=$(datediff ${rel_time} now -f "%Y years, %m months, %w weeks, %d days, %H hours, %M mins, %S secs ago" | sed -r "s/\b0\s\w+,\s//g;s/,.*/ ago/")
+    info=$(echo "${thread_info}" | xargs jq -cr ".posts[${curr_index}] | [ .name, .no ] | @sh" | xargs printf "${bold}%s${off} │ ${time} (${rel_time}) │ No.%s\n")
+printf "┃ ${info}
+${com}
+
+" 2>/dev/null
+    curr_index=$(( curr_index + 1 ))
+done } | less
+
+# end of program
+rm ${thread_info}

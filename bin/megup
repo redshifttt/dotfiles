@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+list=$1
+
+cat $list | while read -r line; do
+    if ! curl -s "$line" | grep "File folder" >/dev/null; then
+        echo "$line | ALIVE"
+    fi
+done

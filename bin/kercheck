@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cached_kernel=$(uname -r)
+current_kernel=$(yes n | yay -R linux 2>&1 | grep "^linux" | awk '{print $2}' | sed "s|\.arch|-arch|")
+
+[[ ! $cached_kernel == $current_kernel ]] && echo "you need to reboot" || echo "you dont need to reboot"

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+choice=$(printf "suspend\nreboot\nshutdown\nlogout\n" | \
+    dmenu -l 20 -p "What do you want to do?" -fn "terminus-10" -nb "#111" -sb "#333")
+
+case "$choice" in
+    suspend) i3lock -c 121212 && systemctl suspend ;;
+    reboot) systemctl reboot ;;
+    shutdown) systemctl poweroff ;;
+    logout) pkill X ;;
+esac

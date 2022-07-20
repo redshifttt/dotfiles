@@ -1,0 +1,5 @@
+#!/bin/sh
+
+url="$1"
+
+yt-dlp -F "$url" | grep "^[a-z0-9]" | fzf | awk '{print $1}' | xargs -I{} yt-dlp -f {} "$url"

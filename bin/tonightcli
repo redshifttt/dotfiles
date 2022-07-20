@@ -1,0 +1,88 @@
+#!/bin/sh
+# Generate different formats for my colour scheme.
+# Useful for when I make changes
+
+grab_value(){
+    grep -m 1 "^colours.$1" $colours_file | awk '{print $NF}' | sed "s|\"||g"
+}
+
+grab_value_al(){
+    grab_value $1 | sed "s|#|0x|"
+}
+
+xres(){
+echo "! special
+*.foreground: $(grab_value foreground)
+*.background: $(grab_value background)
+*.cursorColor: $(grab_value foreground)
+
+! black
+*.color0: $(grab_value background)
+*.color8: $(grab_value gray)
+
+! red
+*.color1: $(grab_value red)
+*.color9: $(grab_value red)
+
+! green
+*.color2: $(grab_value green)
+*.color10: $(grab_value green)
+
+! yellow
+*.color3: $(grab_value yellow)
+*.color11: $(grab_value yellow)
+
+! blue
+*.color4: $(grab_value blue)
+*.color12: $(grab_value blue)
+
+! magenta
+*.color5: $(grab_value magenta)
+*.color13: $(grab_value magenta)
+
+! cyan
+*.color6: $(grab_value teal)
+*.color14: $(grab_value teal)
+
+! white
+*.color7: $(grab_value white)
+*.color15: $(grab_value white)"
+}
+
+alacritty_format(){
+echo "colors:
+  # Default colors
+  primary:
+    background: '$(grab_value_al background)'
+    foreground: '$(grab_value_al foreground)'
+
+  # Normal colors
+  normal:
+    black: '$(grab_value_al background)'
+    red: '$(grab_value_al red)'
+    green: '$(grab_value_al green)'
+    yellow: '$(grab_value_al yellow)'
+    blue: '$(grab_value_al blue)'
+    magenta: '$(grab_value_al magenta)'
+    cyan: '$(grab_value_al teal)'
+    white: '$(grab_value_al white)'
+
+  # Bright colors
+  bright:
+    black: '$(grab_value_al gray)'
+    red: '$(grab_value_al red)'
+    green: '$(grab_value_al green)'
+    yellow: '$(grab_value_al yellow)'
+    blue: '$(grab_value_al blue)'
+    magenta: '$(grab_value_al magenta)'
+    cyan: '$(grab_value_al teal)'
+    white: '$(grab_value_al white)'"
+}
+
+colours_file=/home/sean/files/docs/projects/git/tonight.nvim/lua/colours.lua
+
+case "$1" in
+    a) alacritty_format ;;
+    x) xres ;;
+esac
+

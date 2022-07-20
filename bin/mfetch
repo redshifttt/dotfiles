@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# minimal fetch/my fetch
+
+de=$(pgrep -l ".*-session" | awk '{print $2}' | sed 's/-session//g')
+host=$(< /etc/hostname)
+kr=$(uname -r | sed 's/-.*//g')
+me=$(whoami)
+mu=$(playerctl --player=spotify metadata --format '{{xesam:title}} ({{xesam:artist}})' 2>/dev/null)
+now=$(date +'%Y-%m-%d %H:%M:%S')
+os=$(source /etc/os-release; echo "${NAME}")
+pkg=$(pacman -Q 2>/dev/null | wc -l) # arch only
+root=$(df -h | awk '/\/$/ {print $3 "/" $2 " (" $5 ")"}')
+sh=$(basename "${SHELL}")
+term="${TERMINAL}"
+up=$(datediff "$(uptime -s)" "$now" -f "%dd %Hh %Mm")
+wm=$(wmctrl -m | awk '/Name/ { print $2 }')
+
+[[ -z "${mu}" ]] && mu="none"
+[[ -z "${pkg}" ]] && pkg="none"
+
+printf "
+\e[34m me \e[0m%s
+\e[34m hs \e[0m%s
+\e[34m os \e[0m%s
+\e[34m pk \e[0m%s
+\e[34m kr \e[0m%s
+\e[34m up \e[0m%s
+\e[34m de \e[0m%s
+\e[34m wm \e[0m%s
+\e[34m sh \e[0m%s
+\e[34m te \e[0m%s
+\e[34m mu \e[0m%s
+\e[34m /  \e[0m%s\n\n" \
+"${me}" "${host}" "${os}" "${pkg}" "${kr}" "${up}" "${de}" "${wm}"  "${sh}" "${term}" "${mu}" "${root}" | tr '[:upper:]' '[:lower:]'

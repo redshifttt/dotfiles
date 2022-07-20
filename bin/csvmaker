@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+final_date_format="%d %B %Y"
+missing_dates_file=$(mktemp /tmp/missing-dates-XXXXX.csv)
+correct_dates_file=$(mktemp /tmp/correct-dates-XXXXX.txt)
+patch_file=$(mktemp /tmp/fixed-XXXXX.patch)
+
+echo "==> generating dates from $# html's in $(pwd | xargs -I {} basename {})"
+
+grep "data-message-id" "$@" \
+    | sed "s|.*-id=\"||;s|\".*||" \
+    | while read -r line; do t1=$(( line >> 22 )); t2=$(( t1 + 1420070400000 )); t3=$(( t2 / 1000 )); echo $t3; done \
+    | dateconv -i "%s" -f "$final_date_format" \
+    | datesort -i "$final_date_format" \
+    | uniq -c \
+    | sed -r "s|^\s+||g;s| |,|" \
+    | awk -F',' '{print $2 "," $1}' >> "$missing_dates_file"
+
+isolated_missing_dates_file=$(mktemp /tmp/isolated-missing-dates-XXXXX.txt)
+awk -F',' '{print $1}' < "$missing_dates_file" >> $isolated_missing_dates_file
+first_missing_date=$(cat "$isolated_missing_dates_file" | head -n1 )
+last_missing_date=$(cat "$isolated_missing_dates_file" | tail -n1)
+iso_first_date=$(echo $first_missing_date | dateconv -i "$final_date_format" -f "%F")
+iso_last_date=$(echo $last_missing_date | dateconv -i "$final_date_format" -f "%F")
+timespan=$(datediff $iso_first_date $iso_last_date -f "(%Y years, %m months, %w weeks, %d days)" | sed -r "s/\b0\s\w+,\s//g")
+
+echo "==> isolated missing dates. starts with $first_missing_date, ends with $last_missing_date $timespan"
+echo "==> generated iso dates from first and last missing dates"
+
+dateseq $iso_first_date $iso_last_date -f "$final_date_format" >> "$correct_dates_file"
+
+echo "==> generated correct date sequence"
+
+diff $isolated_missing_dates_file $correct_dates_file >> $patch_file
+sed -ri "s|(^>.*)|\1,0|g" $patch_file
+
+echo "==> created patch file from diff of missing dates and correct dates"
+
+patch $missing_dates_file $patch_file
+
+echo "==> patched original missing dates csv"
+
+read -p "what would you like the remaining fixed csv to be called? (only put words seperated by spaces): " ans
+ans=${ans// /_}
+mv $missing_dates_file $ans.csv
+
+echo "created file $ans.csv"
+
+rm $missing_dates_file $correct_dates_file $isolated_missing_dates_file $patch_file 2>/dev/null

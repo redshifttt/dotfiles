@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# COLOURS
+bold=$(tput setaf 4; tput bold)
+off=$(tput sgr0)
+
+msg(){ printf "${msg_col}==>${off} ${bold}%s${off}\n" "$@"; }
+
+garbage(){
+    msg "Aborted."
+    rm ${thread_info}
+    exit
+}
+
+# trap garbage INT
+
+upcoming="upcoming.json"
+
+# mission name
+# mission description
+# lsp
+# window
+# rocket
+# status/probability
+# launch location (country, centre, pad)
+
+mission_name="$(jq -r '.results[1].name' ${upcoming})"
+mission_desc="$(jq -r '.results[1].mission.description' ${upcoming})"
+lsp="$(jq -r '.results[1].launch_service_provider.name' ${upcoming})"
+net="$(jq -r '.results[1].net' ${upcoming})"
+net="$(dateconv ${net} -f "%a %d %b %Y %T")"
+rocket="$(jq -r '.results[1].rocket.configuration.full_name' ${upcoming})"
+pad_location="$(jq -r '.results[1].pad.location.name' ${upcoming})"
+country_icon="$(jq -r '.results[1].pad.location.country_code' ${upcoming})"
+
+echo "
+${bold}Next rocket launch is:${off} ${mission_name} ${bold}by${off} ${lsp}
+${bold}Launching from:${off} ${pad_location}
+${bold}When:${off} ${net}
+${bold}The rocket will be:${off} ${rocket}
+"
