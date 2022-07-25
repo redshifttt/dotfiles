@@ -69,9 +69,7 @@ return packer.startup(function(use)
         'lukas-reineke/indent-blankline.nvim',
         config = function() require("num-config.plugins.indent-blankline") end,
     }
-
     use {
-        "rebelot/heirline.nvim",
-        config = function() require("num-config.plugins.heirline") end,
+        '~/files/docs/projects/git/tonight.nvim',
     }
 end)
