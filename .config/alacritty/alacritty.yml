@@ -110,34 +110,30 @@ draw_bold_text_with_bright_colors: false
 colors:
   # Default colors
   primary:
-    background: '0x1a1b26'
-    foreground: '0xc0caf5'
+    background: '0x0B0B12'
+    foreground: '0xBEBAC6'
 
   # Normal colors
   normal:
-    black:   '0x15161E'
-    red:     '0xf7768e'
-    green:   '0x9ece6a'
-    yellow:  '0xe0af68'
-    blue:    '0x7aa2f7'
-    magenta: '0xbb9af7'
-    cyan:    '0x7dcfff'
-    white:   '0xa9b1d6'
+    black: '0x0B0B12'
+    red: '0xEC5959'
+    green: '0x56d057'
+    yellow: '0xD2CE6B'
+    blue: '0x759ed4'
+    magenta: '0x9D82E8'
+    cyan: '0x50b2c1'
+    white: '0xBEBAC6'
 
   # Bright colors
   bright:
-    black:   '0x414868'
-    red:     '0xf7768e'
-    green:   '0x9ece6a'
-    yellow:  '0xe0af68'
-    blue:    '0x7aa2f7'
-    magenta: '0xbb9af7'
-    cyan:    '0x7dcfff'
-    white:   '0xc0caf5'
-
-  indexed_colors:
-    - { index: 16, color: '0xff9e64' }
-    - { index: 17, color: '0xdb4b4b' }
+    black: '0x3d4b5b'
+    red: '0xEC5959'
+    green: '0x56d057'
+    yellow: '0xD2CE6B'
+    blue: '0x759ed4'
+    magenta: '0x9D82E8'
+    cyan: '0x50b2c1'
+    white: '0xBEBAC6'
 
 # Window opacity as a floating point number from `0.0` to `1.0`.
 # The value `0.0` is completely transparent and `1.0` is opaque.
