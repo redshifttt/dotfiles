@@ -33,21 +33,3 @@ nmap("<F5>", "<cmd>source $MYVIMRC<CR>", opts)
 
 nmap("H", "<Nop>", opts)
 nmap("L", "<Nop>", opts)
-
-vim.api.nvim_exec([[
-nnoremap <leader>y "+y
-vnoremap <leader>y "+y
-nnoremap <leader>Y "+yg_
-nnoremap <leader>yy "+yy
-
-nnoremap <leader>p "+p
-vnoremap <leader>p "+p
-nnoremap <leader>P "+P
-vnoremap <leader>P "+P
-]], true)
-
-vim.api.nvim_exec([[
-nnoremap <leader>tm :Telescope man_pages<cr>
-nnoremap <leader>thl :Telescope highlights<cr>
-nnoremap <leader>th :Telescope help_tags<cr>
-]], true)

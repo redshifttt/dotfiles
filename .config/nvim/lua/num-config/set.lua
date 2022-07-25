@@ -52,6 +52,8 @@ vim.opt.listchars = { nbsp = "¬", tab = "→·", trail = "-", extends = ">" }
 vim.opt.laststatus = 3
 vim.opt.winbar = "%n %f %m"
 
+vim.opt.clipboard:append("unnamedplus")
+
 -- Turn off a bunch of shit, still gets sourced on startup unfortunately
 vim.g.loaded_gzip = 1
 vim.g.loaded_tar = 1
